@@ -1,0 +1,114 @@
+#include "silniki.h"
+#include "ina3221.h"
+#include <math.h>
+#include <stdio.h>
+
+/* Progi — wartości domyślne z pomiarów (nadpisywane przez kalibrację) */
+float    thresh_ch1_mA  = 60.0f;
+float    thresh_ch2_mA  = 45.0f;
+
+/* Timery */
+uint32_t t_ina_last    = 0;
+uint32_t t_blank_until = 0;
+
+/* ── Zatrzymaj wszystkie silniki ── */
+void stop_all(void)
+{
+    HAL_GPIO_WritePin(GPIOA,
+        PIN_GORA | PIN_DOL | PIN_CCW | PIN_CW,
+        GPIO_PIN_RESET);
+}
+
+/* ── Uruchom silnik w kierunku pin ── */
+void start_kierunek(uint16_t pin)
+{
+    stop_all();
+    HAL_Delay(30);
+    HAL_GPIO_WritePin(GPIOA, pin, GPIO_PIN_SET);
+    t_ina_last    = HAL_GetTick();
+    t_blank_until = HAL_GetTick() + STALL_BLANK_MS;
+}
+
+/* ── Jedź do zderzaka (blokujące) — zwraca czas ruchu [ms] ── */
+uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
+{
+    float   thresh = (ch == 2) ? thresh_ch2_mA : thresh_ch1_mA;
+    uint8_t cnt    = 0;
+    float   I_prev = 0.0f;
+
+    start_kierunek(pin);
+    uint32_t t_start = HAL_GetTick();
+
+    while (1)
+    {
+        uint32_t now = HAL_GetTick();
+        if (now - t_ina_last >= INA_INTERVAL_MS)
+        {
+            t_ina_last = now;
+            float I_mA = fabsf(INA3221_GetCurrentA(ch) * 1000.0f);
+            float dI   = I_mA - I_prev;
+            I_prev = I_mA;
+
+            if (now >= t_blank_until)
+            {
+                uint8_t hit = (I_mA > thresh) ||
+                              (dI > 10.0f && I_mA > thresh * 0.5f);
+                if (hit)
+                {
+                    cnt++;
+                    printf("  STALL? CH%u I=%.1fmA dI=%.1f (%u/%u)\r\n",
+                           ch, I_mA, dI, cnt, STALL_CONFIRM_COUNT);
+                    if (cnt >= STALL_CONFIRM_COUNT)
+                    {
+                        stop_all();
+                        uint32_t t = now - t_start;
+                        printf(">>> ZDERZAK CH%u t=%lu ms\r\n", ch, t);
+                        HAL_Delay(PAUSE_AFTER_STALL_MS);
+                        return t;
+                    }
+                }
+                else { cnt = 0; }
+            }
+        }
+    }
+}
+
+/* ── Jedź przez czas_ms — zwraca 0=OK, 1=nieoczekiwany stall ── */
+uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
+{
+    if (czas_ms == 0) return 0;
+
+    float   thresh = (ch == 2) ? thresh_ch2_mA : thresh_ch1_mA;
+    uint8_t cnt    = 0;
+
+    start_kierunek(pin);
+    uint32_t t0 = HAL_GetTick();
+
+    while ((HAL_GetTick() - t0) < czas_ms)
+    {
+        uint32_t now = HAL_GetTick();
+        if (now - t_ina_last >= INA_INTERVAL_MS)
+        {
+            t_ina_last = now;
+            float I_mA = fabsf(INA3221_GetCurrentA(ch) * 1000.0f);
+
+            if (now >= t_blank_until)
+            {
+                if (I_mA > thresh)
+                {
+                    cnt++;
+                    if (cnt >= STALL_CONFIRM_COUNT)
+                    {
+                        stop_all();
+                        printf("!!! STALL CH%u podczas ruchu I=%.1fmA\r\n",
+                               ch, I_mA);
+                        return 1;
+                    }
+                }
+                else { cnt = 0; }
+            }
+        }
+    }
+    stop_all();
+    return 0;
+}
