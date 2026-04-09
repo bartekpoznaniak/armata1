@@ -23,12 +23,12 @@ TIM_HandleTypeDef  htim1;   /* dodane przez CubeMX po regeneracji */
 
 /* USER CODE BEGIN PV */
 static const Pozycja sekwencja[] = {
-    {  40.0f, 100.0f,  500, 1 },
-    {  20.0f,  50.0f,  500, 1 },
+    {  40.0f, 100.0f,  500, 0 },  /* brak wystrzalu */
+    {  20.0f,  50.0f,  500, 0 },  /* brak wystrzalu */
     {  70.0f,  80.0f,  500, 1 },  /* WYSTRZAL       */
-    {  80.0f, 120.0f,  500, 1 },
-    {  45.0f, 170.0f,  500, 1 },  /* WYSTRZAL       */
-    {  60.0f, 150.0f,  500, 1 },
+    {  80.0f, 120.0f,  500, 0 },
+    {  45.0f, 310.0f,  500, 1 },  /* WYSTRZAL       */
+    {  60.0f, 150.0f, 2000, 0 },
 };
 #define SEKWENCJA_LEN  (sizeof(sekwencja) / sizeof(sekwencja[0]))
 /* USER CODE END PV */
@@ -37,7 +37,7 @@ static const Pozycja sekwencja[] = {
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
-//static void MX_TIM1_Init(void);   /* CubeMX doda tę funkcję — NIE wywołuj z main() */
+static void MX_TIM1_Init(void);   /* CubeMX doda tę funkcję — NIE wywołuj z main() */
 static void MX_USART2_UART_Init(void);
 void Error_Handler(void);
 
@@ -232,11 +232,11 @@ static void MX_I2C1_Init(void) {
     if (HAL_I2C_Init(&hi2c1) != HAL_OK) Error_Handler();
 }
 
-//static void MX_TIM1_Init(void) {
-//    /* Pusta — nigdy nie wywolywana.
-//     * CubeMX wygeneruje tu wlasna wersje po regeneracji.
-//     * Timer jest inicjowany przez wystrzal_pwm_init() w wystrzal.c */
-//}
+static void MX_TIM1_Init(void) {
+    /* Pusta — nigdy nie wywolywana.
+     * CubeMX wygeneruje tu wlasna wersje po regeneracji.
+     * Timer jest inicjowany przez wystrzal_pwm_init() w wystrzal.c */
+}
 
 static void MX_USART2_UART_Init(void) {
     huart2.Instance          = USART2;
