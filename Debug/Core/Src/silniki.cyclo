@@ -1,5 +1,0 @@
-../Core/Src/silniki.c:27:6:stop_all	1
-../Core/Src/silniki.c:35:6:start_kierunek	1
-../Core/Src/silniki.c:45:10:jedz_do_zderzaka_blok	9
-../Core/Src/silniki.c:89:9:jedz_przez_czas	8
-../Core/Src/silniki.c:127:9:jedz_sync	19

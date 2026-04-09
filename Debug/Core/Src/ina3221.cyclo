@@ -1,4 +1,0 @@
-../Core/Src/ina3221.c:12:26:ReadReg	2
-../Core/Src/ina3221.c:22:6:INA3221_Init	2
-../Core/Src/ina3221.c:32:7:INA3221_GetCurrentA	2
-../Core/Src/ina3221.c:39:7:INA3221_GetBusV	2

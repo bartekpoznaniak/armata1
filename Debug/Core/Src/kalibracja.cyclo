@@ -1,4 +1,0 @@
-../Core/Src/kalibracja.c:12:6:wykonaj_kalibracje_pradowa	1
-../Core/Src/kalibracja.c:26:6:wykonaj_homing_i_geometrie	1
-../Core/Src/kalibracja.c:67:9:jedz_do_kata_os1	2
-../Core/Src/kalibracja.c:84:9:jedz_do_kata_os2	2
