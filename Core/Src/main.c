@@ -7,6 +7,7 @@
 #include "kalibracja.h"
 #include "sekwencer.h"
 #include <stdio.h>
+#include "flash_config.h"
 
 /* ─── HAL handles ─────────────────────────────────────────── */
 UART_HandleTypeDef huart2;
@@ -72,107 +73,94 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart) {
  * ================================================================ */
 int main(void)
 {
-    HAL_Init();
-    SystemClock_Config();
-    MX_GPIO_Init();
-    MX_I2C1_Init();
-    MX_USART2_UART_Init();
+	    HAL_Init();
+	    SystemClock_Config();
+	    MX_GPIO_Init();
+	    MX_I2C1_Init();
+	    MX_USART2_UART_Init();
 
-    printf("\r\n=== SYSTEM START ===\r\n\r\n");
+	    printf("\r\n=== SYSTEM START ===\r\n\r\n");
 
-    INA3221_Init(&hi2c1);
-    wykonaj_kalibracje_pradowa();
-    wykonaj_homing_i_geometrie();
+	    INA3221_Init(&hi2c1);
 
+	    KalibracjaFlash kalData = {0};
 
+	    if (flash_wczytaj_kalibracje(&kalData)) {
+	        printf("Flash OK — pomijam kalibracje.\r\n");
 
+	        ms_per_deg_os1 = kalData.ms_per_deg_os1;
+	        ms_per_deg_os2 = kalData.ms_per_deg_os2;
+	        thresh_ch1_mA  = kalData.thresh_ch1_mA;
+	        thresh_ch2_mA  = kalData.thresh_ch2_mA;
+	        pos_os1 = kalData.pos_os1;
+	        pos_os2 = kalData.pos_os2;
+	        printf("Pozycja przywrocona: OS1=%.1f°  OS2=%.1f°\r\n", pos_os1, pos_os2);
+	        printf("OS1: %.3f ms/deg  OS2: %.3f ms/deg\r\n",
+	               ms_per_deg_os1, ms_per_deg_os2);
+	    } else {
+	        printf("Brak danych Flash — wykonuje kalibracje...\r\n");
+	        wykonaj_kalibracje_pradowa();
+	        wykonaj_homing_i_geometrie();
 
+	        kalData.ms_per_deg_os1 = ms_per_deg_os1;
+	        kalData.ms_per_deg_os2 = ms_per_deg_os2;
+	        kalData.thresh_ch1_mA  = thresh_ch1_mA;
+	        kalData.thresh_ch2_mA  = thresh_ch2_mA;
 
+	        kalData.magic = FLASH_MAGIC;
+	        kalData.crc   = oblicz_crc_pub(&kalData);
 
+	        if (flash_zapisz_kalibracje(&kalData) == HAL_OK)
+	            printf("Kalibracja zapisana do Flash.\r\n");
+	        else
+	            printf("BLAD zapisu Flash!\r\n");
+	    }
 
+	    uint32_t nr = 0;
+	    while (1)
+	    {
+	        printf("\r\n[%lu] Czekam na przycisk (PC14)...\r\n", ++nr);
+	        while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
+	            HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	            HAL_Delay(300);
+	        }
+	        HAL_Delay(50);
+	        while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) HAL_Delay(10);
+	        HAL_Delay(50);
 
+	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+	        printf("Start sekwencji #%lu\r\n", nr);
 
+	        sekwencer_run(sekwencja, SEKWENCJA_LEN);
 
+	        if (0) {   /* TODO: flaga z Twojego kalibracja.c / sekwencer.c */
+	            printf("Nieoczekiwany zderzak — rekalibracja!\r\n");
+	            wykonaj_kalibracje_pradowa();
+	            wykonaj_homing_i_geometrie();
 
+	            kalData.ms_per_deg_os1 = ms_per_deg_os1;
+	            kalData.ms_per_deg_os2 = ms_per_deg_os2;
+	            kalData.thresh_ch1_mA  = thresh_ch1_mA;
+	            kalData.thresh_ch2_mA  = thresh_ch2_mA;
+	            kalData.magic = FLASH_MAGIC;
+	            kalData.crc   = oblicz_crc_pub(&kalData);
+	            flash_zapisz_kalibracje(&kalData);
+	            printf("Rekalibracja zapisana.\r\n");
+	        }      else {
+	            printf("Sekwencja #%lu OK. Zapisuje pozycje do Flash.\r\n", nr);
+	            kalData.ms_per_deg_os1 = ms_per_deg_os1;
+	            kalData.ms_per_deg_os2 = ms_per_deg_os2;
+	            kalData.thresh_ch1_mA  = thresh_ch1_mA;
+	            kalData.thresh_ch2_mA  = thresh_ch2_mA;
+	            kalData.pos_os1        = pos_os1;
+	            kalData.pos_os2        = pos_os2;
+	            kalData.magic          = FLASH_MAGIC;
+	            kalData.crc            = oblicz_crc_pub(&kalData);
+	            flash_zapisz_kalibracje(&kalData);
+	        }
+	    }
 
-    printf("Kalibracja OK. Dane zapamietane.\r\n");
-
-       /* ── Petla glowna — kalibracja wykonana raz, sekwencja wielokrotnie ── */
-       uint32_t nr = 0;
-
-       while (1)
-       {
-           /* Czekaj na wcisniecie PC14, migaj LED */
-           printf("\r\n[%lu] Czekam na przycisk (PC14)...\r\n", ++nr);
-           while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
-               HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-               HAL_Delay(300);
-           }
-
-           /* Debounce — nacisnięcie */
-           HAL_Delay(50);
-           while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) {
-               HAL_Delay(10);
-           }
-           /* Debounce — zwolnienie */
-           HAL_Delay(50);
-
-           HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); /* LED ciągłe */
-           printf("Start sekwencji #%lu!\r\n", nr);
-
-           sekwencer_run(sekwencja, SEKWENCJA_LEN);
-
-           printf("Sekwencja #%lu zakonczona.\r\n", nr);
-       }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//    /* ── Czekaj na przycisk PC14 ──────────────────────────── */
-//    printf("\r\nKalibracja OK. Wcisnij przycisk (PC14) aby startowac...\r\n");
-//
-//    /* Migaj LED na PC13 podczas oczekiwania */
-//    while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
-//        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-//        HAL_Delay(300);
-//    }
-//    /* Poczekaj na zwolnienie — eliminacja drgań styków */
-//    HAL_Delay(50);
-//    while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) {
-//        HAL_Delay(10);
-//    }
-//    HAL_Delay(50);
-//
-//    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); /* LED ciągłe = START */
-//    printf("Start sekwencji!\r\n");
-//    /* ─────────────────────────────────────────────────────── */
-//
-//    sekwencer_run(sekwencja, SEKWENCJA_LEN);
-//
-//
-//
-
-
-
-
-
-
-    }
+  }
 
 /* ================================================================
  * KONFIGURACJE SPRZĘTOWE
@@ -242,6 +230,9 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull  = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+
+
 }
 
 static void MX_I2C1_Init(void) {
