@@ -20,13 +20,23 @@ int __io_putchar(int ch) {
 }
 
 /* ─── Sekwencja ruchów — edytuj wg potrzeb ────────────────── */
+
 static const Pozycja sekwencja[] = {
-	  {  40.0f, 100.0f, 500 },  //
-	  {  20.0f, 50.0f , 500 },  //
-	  {  70.0f, 80.0f , 500 },  //
-	  {  80.0f, 120.0f, 500},
-	  {  45.0f, 310.0f, 500},
-	  {  60.0f, 150.0f, 2000},
+    {  40.0f, 100.0f,  500, 0 },  // brak wystrzalu
+    {  20.0f,  50.0f,  500, 0 },  // brak wystrzalu
+    {  70.0f,  80.0f,  500, 1 },  // WYSTRZAL
+    {  80.0f, 120.0f,  500, 0 },
+    {  45.0f, 310.0f,  500, 1 },  // WYSTRZAL
+    {  60.0f, 150.0f, 2000, 0 },
+};
+
+//static const Pozycja sekwencja[] = {
+//	  {  40.0f, 100.0f, 500 },  //
+//	  {  20.0f, 50.0f , 500 },  //
+//	  {  70.0f, 80.0f , 500 },  //
+//	  {  80.0f, 120.0f, 500},
+//	  {  45.0f, 310.0f, 500},
+//	  {  60.0f, 150.0f, 2000},
 
 
 	 // {  0.0f,  0.0f,  500 },  // powrót / stop
@@ -34,7 +44,7 @@ static const Pozycja sekwencja[] = {
 //    {  80.0f, 160.0f,  500 },
 //    {  50.0f, 240.0f, 1000 },
 //    {   0.0f,   0.0f,  500 },
-};
+
 #define SEKWENCJA_LEN  (sizeof(sekwencja) / sizeof(sekwencja[0]))
 
 /* ─── Prototypy ───────────────────────────────────────────── */

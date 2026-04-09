@@ -3,6 +3,7 @@
 #include "sekwencer.h"
 #include "kalibracja.h"
 #include "silniki.h"
+#include "wystrzal.h"
 #include <stdio.h>
 
 void sekwencer_run(const Pozycja *seq, uint16_t len)
@@ -37,9 +38,12 @@ void sekwencer_run(const Pozycja *seq, uint16_t len)
         	printf("[SEQ] Nowa kalibracja zapisana do Flash.\r\n");
         	continue;
         }
-
-        printf("[SEQ] Pozycja OK. Pauza %lu ms\r\n", p->pauza_ms);
+        if (p->strzal) {            // ← NOWE
+            wystrzel();             // ← NOWE
+        }                           // ← NOWE
+        printf("[SEQ] Pozycja OK. Pauza %lu ms\\r\\n", p->pauza_ms);
         HAL_Delay(p->pauza_ms);
+
 
         krok++;
     }
