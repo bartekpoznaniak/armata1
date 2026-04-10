@@ -120,6 +120,7 @@ int main(void)
 
         if (0) {   /* TODO: flaga rekalibracji */
             printf("Nieoczekiwany zderzak — rekalibracja!\r\n");
+            //generator_wyl();
             wykonaj_kalibracje_pradowa();
             wykonaj_homing_i_geometrie();
             kalData.ms_per_deg_os1 = ms_per_deg_os1;
@@ -129,6 +130,7 @@ int main(void)
             kalData.magic          = FLASH_MAGIC;
             kalData.crc            = oblicz_crc_pub(&kalData);
             flash_zapisz_kalibracje(&kalData);
+            //generator_wl();
             printf("Rekalibracja zapisana.\r\n");
         } else {
             printf("Sekwencja #%lu OK. Zapisuje pozycje do Flash.\r\n", nr);
