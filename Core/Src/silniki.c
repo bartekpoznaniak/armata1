@@ -16,7 +16,7 @@ extern float ms_per_deg_os2;
 float pos_os1 = 0.0f;   // eksportuj przez silniki.h: extern float pos_os1;
 float pos_os2 = 0.0f;
 
-float    thresh_ch1_mA  = 48.0f; //bylo 60
+float    thresh_ch1_mA  = 68.0f; //było 48.0 bylo 60
 float    thresh_ch2_mA  = 36.0f; //bylo 45
 
 /* Timery */

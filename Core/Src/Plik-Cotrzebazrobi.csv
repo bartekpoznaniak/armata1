@@ -1,0 +1,3 @@
+"Plik","Co trzeba zrobić"
+"main.c","dodać HAL_CAN_MspInit() w sekcji USER CODE BEGIN 4 — już wkleję do main_armata.c"
+"stm32f1xx_it.c","stworzyć od zera — projekt armaty go nie ma, a CAN potrzebuje CAN1_RX0_IRQHandler"
