@@ -1,14 +1,8 @@
+/* USER CODE BEGIN Header */
 /* ================================================================
- * main.c — STM32F103C8T6 | Węzeł CAN — Armata
- * ================================================================
- * Sterowanie przez CAN:
- *   0x100  FIRE    payload[0]=0xF1  → wystrzel()
- *   0x120  POS     payload[1..2]=os1_raw  [3..4]=os2_raw (CRSF u16 BE)
- *   0x121  SEQ_RUN                  → sekwencer_run(sekwencja[])
- *   0x122  RECAL                    → kalibracja prądowa + homing
- *
- * Lokalny przycisk PC14 nadal działa jako SEQ_RUN bez CAN.
+ * main.c — STM32F103C8T6 | Sekwencer kątowy
  * ================================================================ */
+/* USER CODE END Header */
 
 #include "stm32f1xx_hal.h"
 
@@ -20,73 +14,36 @@
 #include "flash_config.h"
 #include "wystrzal.h"
 #include <stdio.h>
-#include <string.h>
 /* USER CODE END Includes */
 
-/* ─── HAL handles ────────────────────────────────────────── */
+/* ─── HAL handles — CubeMX regeneruje te deklaracje ─────── */
 UART_HandleTypeDef huart2;
 I2C_HandleTypeDef  hi2c1;
-TIM_HandleTypeDef  htim1;
-CAN_HandleTypeDef  hcan;
+TIM_HandleTypeDef  htim1;   /* dodane przez CubeMX po regeneracji */
 
-/* ─── CAN ID ─────────────────────────────────────────────── */
-#define CAN_ID_FIRE     0x100u
-#define CAN_ID_POS      0x120u
-#define CAN_ID_SEQ_RUN  0x121u
-#define CAN_ID_RECAL    0x122u
-
-/* ─── Konwersja CRSF → stopnie ──────────────────────────── */
-#define CRSF_MIN  172.0f
-#define CRSF_MAX  1811.0f
-#define CRSF_RNG  (CRSF_MAX - CRSF_MIN)
-
-static inline float crsf_to_os1(uint16_t raw) {
-    float r = (raw - CRSF_MIN) / CRSF_RNG;
-    if (r < 0.0f) r = 0.0f;
-    if (r > 1.0f) r = 1.0f;
-    return -20.0f + r * 110.0f;           /* −20° … +90° */
-}
-
-static inline float crsf_to_os2(uint16_t raw) {
-    float r = (raw - CRSF_MIN) / CRSF_RNG;
-    if (r < 0.0f) r = 0.0f;
-    if (r > 1.0f) r = 1.0f;
-    return -160.0f + r * KAT_OS2_DEG;    /* −160° … +160° */
-}
-
-/* ─── Sekwencja hardkodowana ─────────────────────────────── */
 /* USER CODE BEGIN PV */
+extern CAN_HandleTypeDef hcan1;
 static const Pozycja sekwencja[] = {
-    {  40.0f, 210.0f, 500, 1 },
-    {  20.0f, 270.0f, 500, 1 },
-    {  70.0f, 280.0f, 500, 1 },  /* WYSTRZAL */
-    {  80.0f, 250.0f, 500, 1 },
-    {  45.0f, 270.0f, 500, 1 },  /* WYSTRZAL */
-    {  60.0f, 250.0f, 500, 1 },
+    {  40.0f, 100.0f,  500, 1 },
+    {  20.0f,  50.0f,  500, 1 },
+    {  70.0f,  80.0f,  500, 1 },  /* WYSTRZAL       */
+    {  80.0f, 120.0f,  500, 1 },
+    {  45.0f, 170.0f,  500, 1 },  /* WYSTRZAL       */
+    {  60.0f, 150.0f,  500, 1 },
 };
 #define SEKWENCJA_LEN  (sizeof(sekwencja) / sizeof(sekwencja[0]))
 
-static char uart_buf[80];
-
-/* Flagi ustawiane z callbacku CAN (IRQ) — obsługiwane w while(1) */
-volatile uint8_t  flag_fire   = 0;
-volatile uint8_t  flag_pos    = 0;
-volatile uint8_t  flag_seq    = 0;
-volatile uint8_t  flag_recal  = 0;
-volatile uint16_t can_os1_raw = 992u;   /* środek CRSF */
-volatile uint16_t can_os2_raw = 992u;
 /* USER CODE END PV */
 
-/* ─── Prototypy ──────────────────────────────────────────── */
+/* ─── Prototypy funkcji sprzętowych ─────────────────────── */
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
+//static void MX_TIM1_Init(void);   /* CubeMX doda tę funkcję — NIE wywołuj z main() */
 static void MX_USART2_UART_Init(void);
-static void MX_CAN_Init(void);
 void Error_Handler(void);
 
 /* USER CODE BEGIN PFP */
-static void kalibracja_wykonaj_i_zapisz(KalibracjaFlash *kd);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -94,6 +51,10 @@ int __io_putchar(int ch) {
     HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
     return ch;
 }
+
+extern volatile uint8_t can_fire_requested;
+extern void can_fire_init(void);
+uint8_t force_calibration = 0;
 /* USER CODE END 0 */
 
 /* ================================================================
@@ -105,19 +66,39 @@ int main(void)
     SystemClock_Config();
     MX_GPIO_Init();
     MX_I2C1_Init();
+    /* MX_TIM1_Init(); */   /* ← ZAKOMENTOWANE — wystrzal_pwm_init() robi to samo */
     MX_USART2_UART_Init();
-    MX_CAN_Init();
+    can_fire_init();
+
+    // TEST — wyślij ramkę 0x7FF po starcie
+    CAN_TxHeaderTypeDef tx_header;
+    uint8_t tx_data[8] = {0xAA, 0xBB, 0xCC, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint32_t tx_mailbox;
+
+    tx_header.StdId              = 0x7FF;
+    tx_header.ExtId              = 0;
+    tx_header.IDE                = CAN_ID_STD;
+    tx_header.RTR                = CAN_RTR_DATA;
+    tx_header.DLC                = 3;
+    tx_header.TransmitGlobalTime = DISABLE;
+
+    if (HAL_CAN_AddTxMessage(&hcan1, &tx_header, tx_data, &tx_mailbox) == HAL_OK) {
+        printf("CAN TX OK\r\n");
+    } else {
+        printf("CAN TX FAIL\r\n");
+    }
+    // koniec TEST — wyślij ramkę 0x7FF
+
+    printf("CAN FIRE ready\r\n");
 
     /* USER CODE BEGIN 2 */
     wystrzal_pwm_init();
-    printf("\r\n=== ARMATA CAN NODE START ===\r\n");
-    printf("FIRE=0x%03X  POS=0x%03X  SEQ=0x%03X  RECAL=0x%03X\r\n",
-           CAN_ID_FIRE, CAN_ID_POS, CAN_ID_SEQ_RUN, CAN_ID_RECAL);
+    printf("\r\n=== SYSTEM START ===\r\n\r\n");
 
     INA3221_Init(&hi2c1);
 
-    /* Wczytaj kalibrację z Flash */
     KalibracjaFlash kalData = {0};
+
     if (flash_wczytaj_kalibracje(&kalData)) {
         printf("Flash OK — pomijam kalibracje.\r\n");
         ms_per_deg_os1 = kalData.ms_per_deg_os1;
@@ -126,177 +107,119 @@ int main(void)
         thresh_ch2_mA  = kalData.thresh_ch2_mA;
         pos_os1        = kalData.pos_os1;
         pos_os2        = kalData.pos_os2;
-        printf("OS1=%.1f  OS2=%.1f  %.3fms/deg  %.3fms/deg\r\n",
-               pos_os1, pos_os2, ms_per_deg_os1, ms_per_deg_os2);
+        printf("Pozycja przywrocona: OS1=%.1f  OS2=%.1f\r\n", pos_os1, pos_os2);
+        printf("OS1: %.3f ms/deg  OS2: %.3f ms/deg\r\n",
+               ms_per_deg_os1, ms_per_deg_os2);
     } else {
-        printf("Brak Flash — kalibracja...\r\n");
-        kalibracja_wykonaj_i_zapisz(&kalData);
+        printf("Brak danych Flash — wykonuje kalibracje...\r\n");
+        wykonaj_kalibracje_pradowa();
+        wykonaj_homing_i_geometrie();
+        kalData.ms_per_deg_os1 = ms_per_deg_os1;
+        kalData.ms_per_deg_os2 = ms_per_deg_os2;
+        kalData.thresh_ch1_mA  = thresh_ch1_mA;
+        kalData.thresh_ch2_mA  = thresh_ch2_mA;
+        kalData.magic          = FLASH_MAGIC;
+        kalData.crc            = oblicz_crc_pub(&kalData);
+        if (flash_zapisz_kalibracje(&kalData) == HAL_OK)
+            printf("Kalibracja zapisana do Flash.\r\n");
+        else
+            printf("BLAD zapisu Flash!\r\n");
     }
 
-    /* Filtry CAN */
-    /* Bank 0: dokładnie 0x100 (FIRE) */
-    CAN_FilterTypeDef f = {0};
-    f.FilterBank           = 0;
-    f.FilterMode           = CAN_FILTERMODE_IDMASK;
-    f.FilterScale          = CAN_FILTERSCALE_32BIT;
-    f.FilterIdHigh         = (CAN_ID_FIRE << 5);
-    f.FilterMaskIdHigh     = (0x7FFu << 5);
-    f.FilterFIFOAssignment = CAN_RX_FIFO0;
-    f.FilterActivation     = ENABLE;
-    HAL_CAN_ConfigFilter(&hcan, &f);
-
-    /* Bank 1: 0x120–0x123 (POS, SEQ_RUN, RECAL) */
-    CAN_FilterTypeDef f2 = {0};
-    f2.FilterBank           = 1;
-    f2.FilterMode           = CAN_FILTERMODE_IDMASK;
-    f2.FilterScale          = CAN_FILTERSCALE_32BIT;
-    f2.FilterIdHigh         = (0x120u << 5);
-    f2.FilterMaskIdHigh     = (0x7FCu << 5);
-    f2.FilterFIFOAssignment = CAN_RX_FIFO0;
-    f2.FilterActivation     = ENABLE;
-    HAL_CAN_ConfigFilter(&hcan, &f2);
-
-    HAL_CAN_Start(&hcan);
-    HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
-    printf("CAN gotowy. Czekam na komendy...\r\n");
+    uint32_t nr = 0;
     /* USER CODE END 2 */
 
-    /* ================================================================
-     * PĘTLA GŁÓWNA
-     * ================================================================ */
     while (1)
     {
         /* USER CODE BEGIN WHILE */
 
-        /* 1. FIRE */
-        if (flag_fire) {
-            flag_fire = 0;
-            printf("[CAN] FIRE\r\n");
-            wystrzel();
-        }
+    	printf("\r\n[%lu] Czekam na przycisk PC14 lub CAN FIRE...\r\n", ++nr);
 
-        /* 2. POS — jedź do zadanych kątów */
-        if (flag_pos) {
-            flag_pos = 0;
-            float os1 = crsf_to_os1(can_os1_raw);
-            float os2 = crsf_to_os2(can_os2_raw);
-            snprintf(uart_buf, sizeof(uart_buf),
-                     "[CAN] POS os1=%.1f os2=%.1f\r\n", os1, os2);
-            printf("%s", uart_buf);
-            jedz_do_kata_os1(os1);
-            jedz_do_kata_os2(os2);
-            kalData.pos_os1 = pos_os1;
-            kalData.pos_os2 = pos_os2;
-            kalData.magic   = FLASH_MAGIC;
-            kalData.crc     = oblicz_crc_pub(&kalData);
+    	uint8_t trigger = 0;
+
+    	// Przycisk lub CAN
+    	while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
+    	    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+    	    HAL_Delay(300);
+    	    if (can_fire_requested) {
+    	        trigger = 1;
+    	        can_fire_requested = 0;
+    	        printf("CAN FIRE received!\r\n");
+    	        break;
+    	    }
+    	}
+    	if (trigger == 0) {
+    	    uint32_t t_start = HAL_GetTick();
+    	    while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) {
+    	        if (can_fire_requested) {
+    	            trigger = 1;
+    	            can_fire_requested = 0;
+    	            printf("CAN FIRE during button!\r\n");
+    	            break;
+    	        }
+    	        HAL_Delay(10);
+    	    }
+    	    if (trigger == 0) {
+    	        uint32_t dt = HAL_GetTick() - t_start;
+    	        HAL_Delay(50);
+    	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+    	        if (dt >= 2000) {
+    	            printf("LONG PRESS → kalibracja\r\n");
+    	            force_calibration = 1;
+    	        } else {
+    	            trigger = 1;
+    	        }
+    	    }
+    	}
+
+    	if (trigger) {
+    	    printf("SHORT PRESS lub CAN FIRE → sekwencja\r\n");
+    	    sekwencer_run(sekwencja, SEKWENCJA_LEN);
+    	}
+
+
+        if (force_calibration) {
+            printf("Nieoczekiwany zderzak — rekalibracja!\r\n");
+            wykonaj_kalibracje_pradowa();
+            wykonaj_homing_i_geometrie();
+            kalData.ms_per_deg_os1 = ms_per_deg_os1;
+            kalData.ms_per_deg_os2 = ms_per_deg_os2;
+            kalData.thresh_ch1_mA  = thresh_ch1_mA;
+            kalData.thresh_ch2_mA  = thresh_ch2_mA;
+            kalData.magic          = FLASH_MAGIC;
+            kalData.crc            = oblicz_crc_pub(&kalData);
+            force_calibration=0;
+            flash_zapisz_kalibracje(&kalData);
+            printf("Rekalibracja zapisana.\r\n");
+
+        } else {
+            printf("Sekwencja #%lu OK. Zapisuje pozycje do Flash.\r\n", nr);
+            kalData.ms_per_deg_os1 = ms_per_deg_os1;
+            kalData.ms_per_deg_os2 = ms_per_deg_os2;
+            kalData.thresh_ch1_mA  = thresh_ch1_mA;
+            kalData.thresh_ch2_mA  = thresh_ch2_mA;
+            kalData.pos_os1        = pos_os1;
+            kalData.pos_os2        = pos_os2;
+            kalData.magic          = FLASH_MAGIC;
+            kalData.crc            = oblicz_crc_pub(&kalData);
             flash_zapisz_kalibracje(&kalData);
         }
-
-        /* 3. SEQ_RUN */
-        if (flag_seq) {
-            flag_seq = 0;
-            printf("[CAN] SEQ START\r\n");
-            sekwencer_run(sekwencja, SEKWENCJA_LEN);
-            printf("[CAN] SEQ OK\r\n");
-            kalData.pos_os1 = pos_os1;
-            kalData.pos_os2 = pos_os2;
-            kalData.magic   = FLASH_MAGIC;
-            kalData.crc     = oblicz_crc_pub(&kalData);
-            flash_zapisz_kalibracje(&kalData);
-        }
-
-        /* 4. RECAL */
-        if (flag_recal) {
-            flag_recal = 0;
-            printf("[CAN] RECAL\r\n");
-            kalibracja_wykonaj_i_zapisz(&kalData);
-        }
-
-        /* 5. Lokalny przycisk PC14 */
-        if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) {
-            HAL_Delay(50);
-            while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET)
-                HAL_Delay(10);
-            HAL_Delay(50);
-            printf("[BTN] SEQ START\r\n");
-            sekwencer_run(sekwencja, SEKWENCJA_LEN);
-            kalData.pos_os1 = pos_os1;
-            kalData.pos_os2 = pos_os2;
-            kalData.magic   = FLASH_MAGIC;
-            kalData.crc     = oblicz_crc_pub(&kalData);
-            flash_zapisz_kalibracje(&kalData);
-        }
-
-        /* Heartbeat LED PC13 */
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-        HAL_Delay(500);
         /* USER CODE END WHILE */
+
+        /* USER CODE BEGIN 3 */
+        /* USER CODE END 3 */
     }
-}
-
-/* ================================================================
- * CALLBACK CAN RX — tylko flagi, zero HAL_Delay!
- * ================================================================ */
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan_h)
-{
-    CAN_RxHeaderTypeDef RxHeader;
-    uint8_t RxData[8];
-    if (HAL_CAN_GetRxMessage(hcan_h, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-        return;
-
-    switch (RxHeader.StdId)
-    {
-        case CAN_ID_FIRE:
-            if (RxData[0] == 0xF1) flag_fire = 1;
-            break;
-
-        case CAN_ID_POS:
-            can_os1_raw = ((uint16_t)RxData[1] << 8) | RxData[2];
-            can_os2_raw = ((uint16_t)RxData[3] << 8) | RxData[4];
-            flag_pos    = 1;
-            break;
-
-        case CAN_ID_SEQ_RUN:
-            flag_seq = 1;
-            break;
-
-        case CAN_ID_RECAL:
-            flag_recal = 1;
-            break;
-
-        default:
-            break;
-    }
-}
-
-/* ================================================================
- * Pomocnicza: kalibracja + zapis Flash
- * ================================================================ */
-static void kalibracja_wykonaj_i_zapisz(KalibracjaFlash *kd)
-{
-    wykonaj_kalibracje_pradowa();
-    wykonaj_homing_i_geometrie();
-    kd->ms_per_deg_os1 = ms_per_deg_os1;
-    kd->ms_per_deg_os2 = ms_per_deg_os2;
-    kd->thresh_ch1_mA  = thresh_ch1_mA;
-    kd->thresh_ch2_mA  = thresh_ch2_mA;
-    kd->pos_os1        = pos_os1;
-    kd->pos_os2        = pos_os2;
-    kd->magic          = FLASH_MAGIC;
-    kd->crc            = oblicz_crc_pub(kd);
-    if (flash_zapisz_kalibracje(kd) == HAL_OK)
-        printf("Kalibracja zapisana.\r\n");
-    else
-        printf("BLAD zapisu Flash!\r\n");
 }
 
 /* ================================================================
  * KONFIGURACJE SPRZĘTOWE
+ * (CubeMX regeneruje te funkcje — Twój kod NIE jest tutaj)
  * ================================================================ */
 static void SystemClock_Config(void) {
     RCC_OscInitTypeDef       RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef       RCC_ClkInitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInit     = {0};
+
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
     RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
@@ -305,6 +228,7 @@ static void SystemClock_Config(void) {
     RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL9;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) Error_Handler();
+
     RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
                                      | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
@@ -312,6 +236,7 @@ static void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) Error_Handler();
+
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
     PeriphClkInit.AdcClockSelection    = RCC_ADCPCLK2_DIV6;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) Error_Handler();
@@ -319,11 +244,13 @@ static void SystemClock_Config(void) {
 
 static void MX_GPIO_Init(void) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_AFIO_CLK_ENABLE();
 
+    /* PC13 LED */
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     GPIO_InitStruct.Pin   = GPIO_PIN_13;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
@@ -331,6 +258,7 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+    /* PA9/PA10/PA11/PA12 — silniki */
     HAL_GPIO_WritePin(GPIOA, PIN_GORA | PIN_DOL | PIN_CCW | PIN_CW, GPIO_PIN_RESET);
     GPIO_InitStruct.Pin   = PIN_GORA | PIN_DOL | PIN_CCW | PIN_CW;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
@@ -338,12 +266,14 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /* PB6/PB7 — I2C1 */
     GPIO_InitStruct.Pin   = GPIO_PIN_6 | GPIO_PIN_7;
     GPIO_InitStruct.Mode  = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    /* PC14 — przycisk START (aktywny LOW, wewnętrzny pull-up) */
     GPIO_InitStruct.Pin   = GPIO_PIN_14;
     GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull  = GPIO_PULLUP;
@@ -364,6 +294,12 @@ static void MX_I2C1_Init(void) {
     if (HAL_I2C_Init(&hi2c1) != HAL_OK) Error_Handler();
 }
 
+//static void MX_TIM1_Init(void) {
+//    /* Pusta — nigdy nie wywolywana.
+//     * CubeMX wygeneruje tu wlasna wersje po regeneracji.
+//     * Timer jest inicjowany przez wystrzal_pwm_init() w wystrzal.c */
+//}
+
 static void MX_USART2_UART_Init(void) {
     huart2.Instance          = USART2;
     huart2.Init.BaudRate     = 115200;
@@ -376,24 +312,7 @@ static void MX_USART2_UART_Init(void) {
     if (HAL_UART_Init(&huart2) != HAL_OK) Error_Handler();
 }
 
-static void MX_CAN_Init(void) {
-    hcan.Instance                  = CAN1;
-    hcan.Init.Prescaler            = 4;
-    hcan.Init.Mode                 = CAN_MODE_NORMAL;
-    hcan.Init.SyncJumpWidth        = CAN_SJW_1TQ;
-    hcan.Init.TimeSeg1             = CAN_BS1_15TQ;
-    hcan.Init.TimeSeg2             = CAN_BS2_2TQ;
-    hcan.Init.TimeTriggeredMode    = DISABLE;
-    hcan.Init.AutoBusOff           = DISABLE;
-    hcan.Init.AutoWakeUp           = DISABLE;
-    hcan.Init.AutoRetransmission   = ENABLE;
-    hcan.Init.ReceiveFifoLocked    = DISABLE;
-    hcan.Init.TransmitFifoPriority = DISABLE;
-    if (HAL_CAN_Init(&hcan) != HAL_OK) Error_Handler();
-}
-
 /* USER CODE BEGIN 4 */
-
 void HAL_UART_MspInit(UART_HandleTypeDef *huart) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (huart->Instance == USART2) {
@@ -421,34 +340,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
         __HAL_RCC_I2C1_CLK_ENABLE();
     }
 }
-
-/* NOWE — wymagane przez MX_CAN_Init() */
-void HAL_CAN_MspInit(CAN_HandleTypeDef *hcan_h) {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    if (hcan_h->Instance == CAN1) {
-        __HAL_RCC_CAN1_CLK_ENABLE();
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-
-        /* PA11 = CAN_RX — wejście floating */
-        GPIO_InitStruct.Pin   = GPIO_PIN_11;
-        GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
-        GPIO_InitStruct.Pull  = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-        /* PA12 = CAN_TX — wyjście AF push-pull */
-        GPIO_InitStruct.Pin   = GPIO_PIN_12;
-        GPIO_InitStruct.Mode  = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-        /* Przerwanie RX FIFO0 — priorytet 5 (niższy niż SysTick=0) */
-        HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 5, 0);
-        HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
-        //HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 5, 0);
-        //HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-    }
-}
-
 /* USER CODE END 4 */
 
 void Error_Handler(void) {

@@ -5,14 +5,12 @@
 #include "silniki.h"
 #include "wystrzal.h"
 #include <stdio.h>
-/* ── Parametry generatora dymu ─────────────────────────────── */
-#define GENERATOR_ROZGRZEW_MS  2000u   // czas nagrzewania [ms] ← REGULUJ
 
 void sekwencer_run(const Pozycja *seq, uint16_t len)
 {
     uint16_t krok = 0;
-    generator_wl();                          // ← DODAJ: włącz generator
-    HAL_Delay(GENERATOR_ROZGRZEW_MS);        // ← DODAJ: czekaj na rozgrzanie
+    //generator_wl();                          // ← DODAJ: włącz generator
+    //HAL_Delay(GENERATOR_ROZGRZEW_MS);        // ← DODAJ: czekaj na rozgrzanie
 
     while (krok < len)
     {
@@ -28,10 +26,9 @@ void sekwencer_run(const Pozycja *seq, uint16_t len)
 
 
         	printf("[SEQ] Rekalibracja po stall (krok %u)\r\n", krok);
-        	generator_wyl();
         	wykonaj_kalibracje_pradowa();
         	wykonaj_homing_i_geometrie();
-        	generator_wl();
+
         	KalibracjaFlash kalData = {0};
         	kalData.ms_per_deg_os1 = ms_per_deg_os1;
         	kalData.ms_per_deg_os2 = ms_per_deg_os2;
@@ -43,15 +40,13 @@ void sekwencer_run(const Pozycja *seq, uint16_t len)
         	printf("[SEQ] Nowa kalibracja zapisana do Flash.\r\n");
         	continue;
         }
-        printf("[SEQ] krok %u — flaga strzal = %u\r\n", krok, p->strzal);
         if (p->strzal) {            // ← NOWE
             wystrzel();             // ← NOWE
         }                           // ← NOWE
         printf("[SEQ] Pozycja OK. Pauza %lu ms\\r\\n", p->pauza_ms);
         HAL_Delay(p->pauza_ms);
-
+        //generator_wyl();
 
         krok++;
-    }//koniec petli  while (krok < len)
-    generator_wyl();
+    }
 }

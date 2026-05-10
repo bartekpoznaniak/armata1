@@ -20,6 +20,7 @@ void wykonaj_kalibracje_pradowa(void)
     printf("[CALIB] CH1 (CW/CCW)   prog stall: %.1f mA\r\n", thresh_ch1_mA);
     printf("[CALIB] CH2 (GORA/DOL) prog stall: %.1f mA\r\n", thresh_ch2_mA);
     printf("=== OK ===\r\n\r\n");
+
 }
 
 /* ── Homing + pomiar zakresu obu osi ── */

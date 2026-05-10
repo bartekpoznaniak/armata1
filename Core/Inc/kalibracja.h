@@ -8,7 +8,7 @@
 #define KAT_OS2_DEG   320.0f   /* CW/CCW   */
 
 /* Progi domyślne z pomiarów (baseline * 1.8) */
-#define DEFAULT_THRESH_CH1_MA  80.0f
+#define DEFAULT_THRESH_CH1_MA  60.0f
 #define DEFAULT_THRESH_CH2_MA  45.0f
 
 extern float ms_per_deg_os1;
