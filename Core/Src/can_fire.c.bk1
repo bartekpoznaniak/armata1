@@ -9,8 +9,7 @@ CAN_HandleTypeDef hcan1;
 CAN_RxHeaderTypeDef rx_header;
 uint8_t rx_data[8];
 
-//volatile uint8_t can_fire_requested = 0;
-volatile int8_t can_sequence_requested = -1;
+volatile uint8_t can_fire_requested = 0;
 extern volatile uint8_t can_fire_mode;
 void can_fire_init(void)
 {
@@ -85,19 +84,17 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 
         		uint8_t mode = rx_data[1];
-        		can_sequence_requested = mode;
 
-//        		static uint8_t fired = 0;
-//
-//        		if (mode != 0 && fired == 0) {
-//        		    can_sequence_requested = mode;   // 👈 TU przekazujesz numer sekwencji
-//        		    fired = 1;
-//        		}
-//
-//        		if (mode == 0) {
-//        		    fired = 0;
-//        		}
+        		static uint8_t fired = 0;
 
+        		if (mode == 1 && fired == 0) {
+        		    can_fire_requested = 1;
+        		    fired = 1;
+        		}
+
+        		if (mode == 0) {
+        		    fired = 0;
+        		}
         	}
 
         }

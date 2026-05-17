@@ -25,26 +25,13 @@ TIM_HandleTypeDef  htim1;   /* dodane przez CubeMX po regeneracji */
 extern CAN_HandleTypeDef hcan1;
 
 
-
-//#define SEKWENCJA10_LEN (sizeof(sekwencja10) / sizeof(sekwencja10[0]))
-#define SEKWENCJA0_LEN (sizeof(sekwencja0)/sizeof(sekwencja0[0]))
+#define SEKWENCJA4_LEN  (sizeof(sekwencja) / sizeof(sekwencja[0]))
 #define SEKWENCJA1_LEN (sizeof(sekwencja1)/sizeof(sekwencja1[0]))
 #define SEKWENCJA2_LEN (sizeof(sekwencja2)/sizeof(sekwencja2[0]))
 #define SEKWENCJA3_LEN (sizeof(sekwencja3)/sizeof(sekwencja3[0]))
-#define SEKWENCJA4_LEN (sizeof(sekwencja4)/sizeof(sekwencja4[0]))
-#define SEKWENCJA5_LEN (sizeof(sekwencja5)/sizeof(sekwencja5[0]))
 
-#define SEKWENCJA6_LEN (sizeof(sekwencja6)/sizeof(sekwencja6[0]))
-#define SEKWENCJA7_LEN (sizeof(sekwencja7)/sizeof(sekwencja7[0]))
-#define SEKWENCJA8_LEN (sizeof(sekwencja8)/sizeof(sekwencja8[0]))
-#define SEKWENCJA9_LEN (sizeof(sekwencja9)/sizeof(sekwencja9[0]))
 
-static const Pozycja sekwencja0[] = {
-    { 40.0f,  150.0f, 500, 1 },
-    { 20.0f,  50.0f, 500, 1 },
-};
-
-static const Pozycja sekwencja1[] = {
+static const Pozycja sekwencja[] = {
     {  40.0f, 100.0f,  500, 1 },
     {  20.0f,  50.0f,  500, 1 },
     {  70.0f,  80.0f,  500, 1 },  /* WYSTRZAL       */
@@ -54,44 +41,17 @@ static const Pozycja sekwencja1[] = {
 };
 
 
+static const Pozycja sekwencja1[] = {
+    { 40.0f,  150.0f, 500, 1 },
+    { 20.0f,  50.0f, 500, 1 },
+};
+
 static const Pozycja sekwencja2[] = {
     { 70.0f,  80.0f, 500, 1 },
     { 80.0f, 120.0f, 500, 1 },
 };
 
 static const Pozycja sekwencja3[] = {
-    { 45.0f, 170.0f, 500, 1 },
-    { 60.0f, 150.0f, 500, 1 },
-};
-
-
-
-static const Pozycja sekwencja4[] = {
-    { 40.0f,  150.0f, 500, 1 },
-    { 20.0f,  50.0f, 500, 1 },
-};
-
-static const Pozycja sekwencja5[] = {
-    { 70.0f,  80.0f, 500, 1 },
-    { 80.0f, 120.0f, 500, 1 },
-};
-
-static const Pozycja sekwencja6[] = {
-    { 45.0f, 170.0f, 500, 1 },
-    { 60.0f, 150.0f, 500, 1 },
-};
-
-static const Pozycja sekwencja7[] = {
-    { 40.0f,  150.0f, 500, 1 },
-    { 20.0f,  50.0f, 500, 1 },
-};
-
-static const Pozycja sekwencja8[] = {
-    { 70.0f,  80.0f, 500, 1 },
-    { 80.0f, 120.0f, 500, 1 },
-};
-
-static const Pozycja sekwencja9[] = {
     { 45.0f, 170.0f, 500, 1 },
     { 60.0f, 150.0f, 500, 1 },
 };
@@ -106,80 +66,14 @@ typedef struct {
 
 
 
+
 Sekw tabela[] = {
-
-    // 0
-    {sekwencja0, SEKWENCJA0_LEN},  // tymczasowo
-
-    // 1
+    {NULL, 0},
     {sekwencja1, SEKWENCJA1_LEN},
-
-    // 2
     {sekwencja2, SEKWENCJA2_LEN},
-
-    // 3
     {sekwencja3, SEKWENCJA3_LEN},
-
-    // 4
-    {sekwencja4, SEKWENCJA4_LEN},
-
-    // 5
-    {sekwencja5, SEKWENCJA5_LEN},
-
-    // 6
-    {sekwencja6, SEKWENCJA6_LEN},
-
-    // 7
-    {sekwencja7, SEKWENCJA7_LEN},
-
-    // 8
-	{sekwencja8, SEKWENCJA8_LEN},
-
-	//9
-	{sekwencja9, SEKWENCJA9_LEN},
-
-	////10
-	//{sekwencja10, SEKWENCJA10_LEN},  // Twoja duża
-
-
-
+	{sekwencja,  SEKWENCJA4_LEN},
 };
-
-//Sekw tabela[] = {
-//
-//    {sekwencja0, SEKWENCJA0_LEN},  // 0 ✅
-//    {sekwencja1, SEKWENCJA1_LEN},  // 1 ✅
-//    {sekwencja2, SEKWENCJA2_LEN},  // 2 ✅
-//    {sekwencja3, SEKWENCJA3_LEN},  // 3 ✅
-//    {sekwencja4, SEKWENCJA4_LEN},  // 4 ✅
-//    {sekwencja5, SEKWENCJA5_LEN},  // 5 ✅
-//    {sekwencja6, SEKWENCJA6_LEN},  // 6 ✅
-//    {sekwencja7, SEKWENCJA7_LEN},  // 7 ✅
-//    {sekwencja8, SEKWENCJA8_LEN},  // 8 ✅
-//    {sekwencja9, SEKWENCJA9_LEN},  // 9 ✅
-//
-//    {sekwencja10,  SEKWENCJA10_LEN}, // 10 (opcjonalnie)
-//};
-
-
-//Sekw tabela[] = {
-//    {NULL, 0},
-//	{sekwencja0, SEKWENCJA0_LEN},
-//    {sekwencja1, SEKWENCJA1_LEN},
-//    {sekwencja2, SEKWENCJA2_LEN},
-//    {sekwencja3, SEKWENCJA3_LEN},
-//    {sekwencja4, SEKWENCJA4_LEN},
-//    {sekwencja5, SEKWENCJA5_LEN},
-//    {sekwencja6, SEKWENCJA6_LEN},
-//    {sekwencja7, SEKWENCJA7_LEN},
-//    {sekwencja8, SEKWENCJA8_LEN},
-//    {sekwencja9, SEKWENCJA9_LEN},
-//
-//	{sekwencja,  SEKWENCJA10_LEN},
-//};
-
-
-
 
 
 
@@ -353,9 +247,8 @@ int main(void)
 
 
     	if (trigger) {
-    		           //if (seq > 0 && seq < (sizeof(tabela)/sizeof(tabela[0])))
-    		if (seq >= 0 && seq < (sizeof(tabela)/sizeof(tabela[0]))
-    		        && tabela[seq].seq != NULL) {
+
+    	    if (seq > 0 && seq < (sizeof(tabela)/sizeof(tabela[0]))) {
 
     	        printf("START sekwencji %d\r\n", seq);
 
