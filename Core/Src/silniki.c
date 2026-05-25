@@ -19,9 +19,37 @@ float pos_os2 = 0.0f;
 float    thresh_ch1_mA  = 48.0f; //bylo 60
 float    thresh_ch2_mA  = 36.0f; //bylo 45
 
-/* Timery */
-uint32_t t_ina_last    = 0;
+uint32_t t_ina_last = 0;
 uint32_t t_blank_until = 0;
+static uint32_t log_sample_div = 0;
+
+/* Timery */
+
+#if CURRENT_LOGGER_ENABLE
+static uint8_t current_log_should_print(void)
+{
+    log_sample_div++;
+    if (log_sample_div >= CURRENT_LOG_EVERY_NTH) {
+        log_sample_div = 0;
+        return 1;
+    }
+    return 0;
+}
+
+static void current_log_print(const char *tag, uint8_t ch, float I_mA, float thresh, float dI, uint8_t cnt)
+{
+    printf("[CUR] t=%lu %s CH%u I=%.1f mA dI=%.1f thr=%.1f cnt=%u\r\n",
+           HAL_GetTick(), tag, ch, I_mA, dI, thresh, cnt);
+}
+#else
+#define current_log_should_print() (0)
+#define current_log_print(tag, ch, I_mA, thresh, dI, cnt) ((void)0)
+#endif
+
+
+
+
+
 
 /* ── Zatrzymaj wszystkie silniki ── */
 void stop_all(void)
@@ -61,6 +89,10 @@ uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
             float dI   = I_mA - I_prev;
             I_prev = I_mA;
 
+            if (current_log_should_print()) {
+                current_log_print("ZDERZAK", ch, I_mA, thresh, dI, cnt);
+            }
+
             if (now >= t_blank_until)
             {
                 uint8_t hit = (I_mA > thresh) || (dI > 9.4f && I_mA > thresh * 0.5f);
@@ -68,12 +100,14 @@ uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
                 if (hit)
                 {
                     cnt++;
+                    current_log_print("STALL?", ch, I_mA, thresh, dI, cnt);
                     printf("  STALL? CH%u I=%.1fmA dI=%.1f (%u/%u)\r\n",
                            ch, I_mA, dI, cnt, STALL_CONFIRM_COUNT);
                     if (cnt >= STALL_CONFIRM_COUNT)
                     {
                         stop_all();
                         uint32_t t = now - t_start;
+                        current_log_print("ZDERZAK!", ch, I_mA, thresh, dI, cnt);
                         printf(">>> ZDERZAK CH%u t=%lu ms\r\n", ch, t);
                         HAL_Delay(PAUSE_AFTER_STALL_MS);
                         return t;
@@ -84,6 +118,11 @@ uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
         }
     }
 }
+
+
+
+
+
 
 /* ── Jedź przez czas_ms — zwraca 0=OK, 1=nieoczekiwany stall ── */
 uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
@@ -104,6 +143,10 @@ uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
             t_ina_last = now;
             float I_mA = fabsf(INA3221_GetCurrentA(ch) * 1000.0f);
 
+            if (current_log_should_print()) {
+                current_log_print("RUCH", ch, I_mA, thresh, 0.0f, cnt);
+            }
+
             if (now >= t_blank_until)
             {
                 if (I_mA > thresh)
@@ -112,6 +155,7 @@ uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
                     if (cnt >= STALL_CONFIRM_COUNT)
                     {
                         stop_all();
+                        current_log_print("STALL_RUCH", ch, I_mA, thresh, 0.0f, cnt);
                         printf("!!! STALL CH%u podczas ruchu I=%.1fmA\r\n",
                                ch, I_mA);
                         return 1;

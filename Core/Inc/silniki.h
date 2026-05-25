@@ -20,10 +20,13 @@
 #define STALL_BLANK_MS       200u //było 600
 #define STALL_CONFIRM_COUNT  1
 #define PAUSE_AFTER_STALL_MS 150u //było 300u
-
 /* Progi stall — ustawiane przez kalibracja.c */
 extern float    thresh_ch1_mA;
 extern float    thresh_ch2_mA;
+
+/* Logger prądów */
+#define CURRENT_LOGGER_ENABLE   1u   /* 1 = ON, 0 = OFF */
+#define CURRENT_LOG_EVERY_NTH   2u   /* 1=co próbkę, 2=co drugą, 4=co czwartą */
 
 /* Timery współdzielone */
 extern uint32_t t_ina_last;

@@ -163,48 +163,11 @@ Sekw tabela[] = {
 	//9
 	{sekwencja9, SEKWENCJA9_LEN},
 
-	////10
-	//{sekwencja10, SEKWENCJA10_LEN},  // Twoja duża
+
 
 
 
 };
-
-//Sekw tabela[] = {
-//
-//    {sekwencja0, SEKWENCJA0_LEN},  // 0 ✅
-//    {sekwencja1, SEKWENCJA1_LEN},  // 1 ✅
-//    {sekwencja2, SEKWENCJA2_LEN},  // 2 ✅
-//    {sekwencja3, SEKWENCJA3_LEN},  // 3 ✅
-//    {sekwencja4, SEKWENCJA4_LEN},  // 4 ✅
-//    {sekwencja5, SEKWENCJA5_LEN},  // 5 ✅
-//    {sekwencja6, SEKWENCJA6_LEN},  // 6 ✅
-//    {sekwencja7, SEKWENCJA7_LEN},  // 7 ✅
-//    {sekwencja8, SEKWENCJA8_LEN},  // 8 ✅
-//    {sekwencja9, SEKWENCJA9_LEN},  // 9 ✅
-//
-//    {sekwencja10,  SEKWENCJA10_LEN}, // 10 (opcjonalnie)
-//};
-
-
-//Sekw tabela[] = {
-//    {NULL, 0},
-//	{sekwencja0, SEKWENCJA0_LEN},
-//    {sekwencja1, SEKWENCJA1_LEN},
-//    {sekwencja2, SEKWENCJA2_LEN},
-//    {sekwencja3, SEKWENCJA3_LEN},
-//    {sekwencja4, SEKWENCJA4_LEN},
-//    {sekwencja5, SEKWENCJA5_LEN},
-//    {sekwencja6, SEKWENCJA6_LEN},
-//    {sekwencja7, SEKWENCJA7_LEN},
-//    {sekwencja8, SEKWENCJA8_LEN},
-//    {sekwencja9, SEKWENCJA9_LEN},
-//
-//	{sekwencja,  SEKWENCJA10_LEN},
-//};
-
-
-
 
 
 
@@ -338,11 +301,7 @@ int main(void)
     	        break;
     	    }
 
-//    	    if (seq >= 0) {
-//    	        trigger = 1;
-//    	        can_sequence_requested = -1;
-//    	        printf("CAN SEQ received: %d\r\n", seq);
-//    	    }
+
 
     	}
     	if (trigger == 0) {
@@ -393,15 +352,7 @@ int main(void)
     	    }
     	}
 
-//    	if (trigger) {
-//    	    printf("START sekwencji %d\r\n", seq);
-//    	    sekwencer_run(sekwencja1, SEKWENCJA1_LEN);
-//    	}
 
-//    	if (trigger) {
-//    	    printf("SHORT PRESS lub CAN FIRE → sekwencja\r\n");
-//    	    sekwencer_run(sekwencja, SEKWENCJA_LEN);
-//    	}
 
 
         if (force_calibration) {
