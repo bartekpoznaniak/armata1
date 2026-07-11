@@ -1,31 +1,26 @@
-
-// * silniki.c * //
 #include "silniki.h"
 #include "ina3221.h"
 #include <math.h>
 #include <stdio.h>
 
-
-
 extern float ms_per_deg_os1;
 extern float ms_per_deg_os2;
-#define BLANK_MS  200u
+
+#define BLANK_MS 200u
 
 /* Progi — wartości domyślne z pomiarów (nadpisywane przez kalibrację) */
-
-float pos_os1 = 0.0f;   // eksportuj przez silniki.h: extern float pos_os1;
+float pos_os1 = 0.0f;
 float pos_os2 = 0.0f;
 
-float    thresh_ch1_mA  = 48.0f; //bylo 60
-float    thresh_ch2_mA  = 36.0f; //bylo 45
+float thresh_ch1_mA = 48.0f; /* bylo 60 */
+float thresh_ch2_mA = 36.0f; /* bylo 45 */
 
 uint32_t t_ina_last = 0;
 uint32_t t_blank_until = 0;
-static uint32_t log_sample_div = 0;
-
-/* Timery */
 
 #if CURRENT_LOGGER_ENABLE
+static uint32_t log_sample_div = 0;
+
 static uint8_t current_log_should_print(void)
 {
     log_sample_div++;
@@ -46,12 +41,6 @@ static void current_log_print(const char *tag, uint8_t ch, float I_mA, float thr
 #define current_log_print(tag, ch, I_mA, thresh, dI, cnt) ((void)0)
 #endif
 
-
-
-
-
-
-/* ── Zatrzymaj wszystkie silniki ── */
 void stop_all(void)
 {
     HAL_GPIO_WritePin(GPIOA,
@@ -59,7 +48,6 @@ void stop_all(void)
         GPIO_PIN_RESET);
 }
 
-/* ── Uruchom silnik w kierunku pin ── */
 void start_kierunek(uint16_t pin)
 {
     stop_all();
@@ -69,7 +57,6 @@ void start_kierunek(uint16_t pin)
     t_blank_until = HAL_GetTick() + STALL_BLANK_MS;
 }
 
-/* ── Jedź do zderzaka (blokujące) — zwraca czas ruchu [ms] ── */
 uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
 {
     float   thresh = (ch == 2) ? thresh_ch2_mA : thresh_ch1_mA;
@@ -82,7 +69,7 @@ uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
     while (1)
     {
         uint32_t now = HAL_GetTick();
-        if (now - t_ina_last >= INA_INTERVAL_MS)
+        if ((now - t_ina_last) >= INA_INTERVAL_MS)
         {
             t_ina_last = now;
             float I_mA = fabsf(INA3221_GetCurrentA(ch) * 1000.0f);
@@ -95,10 +82,26 @@ uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
 
             if (now >= t_blank_until)
             {
-                uint8_t hit = (I_mA > thresh) || (dI > 9.4f && I_mA > thresh * 0.5f);
-                //uint8_t hit = (I_mA > thresh) || (dI > 10.0f && I_mA > thresh * 0.5f);
+
+            	uint8_t condI  = (I_mA > thresh);
+
+            	#if STALL_USE_DI
+            	    uint8_t condDI = (dI > STALL_DI_THRESH_MA) &&
+            	                     (I_mA > thresh * STALL_DI_MIN_I_RATIO);
+            	#else
+            	    uint8_t condDI = 0u;
+            	#endif
+
+            	    uint8_t hit = condI || condDI;
+//                uint8_t condI  = (I_mA > thresh);
+//                uint8_t condDI = (dI > 9.4f && I_mA > thresh * 0.5f);
+//                uint8_t hit    = condI || condDI;
+
                 if (hit)
                 {
+                    printf("[DBG] hit=%d condI=%d condDI=%d CH%u I=%.1f dI=%.1f thr=%.1f\r\n",
+                           hit, condI, condDI, ch, I_mA, dI, thresh);
+
                     cnt++;
                     current_log_print("STALL?", ch, I_mA, thresh, dI, cnt);
                     printf("  STALL? CH%u I=%.1fmA dI=%.1f (%u/%u)\r\n",
@@ -113,18 +116,15 @@ uint32_t jedz_do_zderzaka_blok(uint16_t pin, uint8_t ch)
                         return t;
                     }
                 }
-                else { cnt = 0; }
+                else
+                {
+                    cnt = 0;
+                }
             }
         }
     }
 }
 
-
-
-
-
-
-/* ── Jedź przez czas_ms — zwraca 0=OK, 1=nieoczekiwany stall ── */
 uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
 {
     if (czas_ms == 0) return 0;
@@ -138,7 +138,7 @@ uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
     while ((HAL_GetTick() - t0) < czas_ms)
     {
         uint32_t now = HAL_GetTick();
-        if (now - t_ina_last >= INA_INTERVAL_MS)
+        if ((now - t_ina_last) >= INA_INTERVAL_MS)
         {
             t_ina_last = now;
             float I_mA = fabsf(INA3221_GetCurrentA(ch) * 1000.0f);
@@ -161,13 +161,18 @@ uint8_t jedz_przez_czas(uint16_t pin, uint8_t ch, uint32_t czas_ms)
                         return 1;
                     }
                 }
-                else { cnt = 0; }
+                else
+                {
+                    cnt = 0;
+                }
             }
         }
     }
+
     stop_all();
     return 0;
 }
+
 uint8_t jedz_sync(float kat_os1, float kat_os2)
 {
     float delta1 = kat_os1 - pos_os1;
@@ -209,7 +214,7 @@ uint8_t jedz_sync(float kat_os1, float kat_os2)
             printf("[SYNC] OS2 na %.1f°\r\n", kat_os2);
         }
 
-        if (now - t_ina_last >= INA_INTERVAL_MS) {
+        if ((now - t_ina_last) >= INA_INTERVAL_MS) {
             t_ina_last = now;
             if (now >= t_blank) {
                 if (!done1) {
@@ -240,6 +245,3 @@ uint8_t jedz_sync(float kat_os1, float kat_os2)
 
     return 0;
 }
-
-
-

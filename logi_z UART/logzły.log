@@ -1,0 +1,215 @@
+LONG PRESS → kalibracja
+Nieoczekiwany zderzak — rekalibracja!
+
+=== KALIBRACJA PRADOWA ===
+[CALIB] CH1 (CW/CCW)   prog stall: 60.0 mA
+[CALIB] CH2 (GORA/DOL) prog stall: 45.0 mA
+=== OK ===
+
+
+=== HOMING + KALIBRACJA GEOMETRII ===
+[H] OS1 → zderzak A (GORA)...
+[CUR] t=50535 ZDERZAK CH2 I=98.0 mA dI=-41.6 thr=45.0 cnt=0
+[CUR] t=50575 ZDERZAK CH2 I=87.6 mA dI=3.2 thr=45.0 cnt=0
+[CUR] t=50615 ZDERZAK CH2 I=99.2 mA dI=6.4 thr=45.0 cnt=0
+[CUR] t=50655 ZDERZAK CH2 I=114.4 mA dI=9.2 thr=45.0 cnt=0
+[CUR] t=50695 ZDERZAK CH2 I=122.0 mA dI=4.4 thr=45.0 cnt=0
+[CUR] t=50700 STALL? CH2 I=122.0 mA dI=4.4 thr=45.0 cnt=1
+  STALL? CH2 I=122.0mA dI=4.4 (1/1)
+[CUR] t=50709 ZDERZAK! CH2 I=122.0 mA dI=4.4 thr=45.0 cnt=1
+>>> ZDERZAK CH2 t=200 ms
+[H] OS1 → mierzę zakres (DOL)...
+[CUR] t=50942 ZDERZAK CH2 I=39.2 mA dI=-56.0 thr=45.0 cnt=0
+[CUR] t=50982 ZDERZAK CH2 I=12.4 mA dI=-12.0 thr=45.0 cnt=0
+[CUR] t=51022 ZDERZAK CH2 I=15.6 mA dI=3.6 thr=45.0 cnt=0
+[CUR] t=51062 ZDERZAK CH2 I=16.8 mA dI=1.6 thr=45.0 cnt=0
+[CUR] t=51102 ZDERZAK CH2 I=17.2 mA dI=3.2 thr=45.0 cnt=0
+[CUR] t=51142 ZDERZAK CH2 I=16.0 mA dI=-2.8 thr=45.0 cnt=0
+[CUR] t=51182 ZDERZAK CH2 I=18.8 mA dI=-3.6 thr=45.0 cnt=0
+[CUR] t=51222 ZDERZAK CH2 I=18.8 mA dI=-2.4 thr=45.0 cnt=0
+[CUR] t=51262 ZDERZAK CH2 I=23.2 mA dI=5.2 thr=45.0 cnt=0
+[CUR] t=51302 ZDERZAK CH2 I=20.4 mA dI=1.2 thr=45.0 cnt=0
+[CUR] t=51342 ZDERZAK CH2 I=24.8 mA dI=7.6 thr=45.0 cnt=0
+[CUR] t=51382 ZDERZAK CH2 I=20.4 mA dI=3.2 thr=45.0 cnt=0
+[CUR] t=51422 ZDERZAK CH2 I=19.6 mA dI=-2.0 thr=45.0 cnt=0
+[CUR] t=51462 ZDERZAK CH2 I=24.8 mA dI=7.6 thr=45.0 cnt=0
+[CUR] t=51502 ZDERZAK CH2 I=24.0 mA dI=6.0 thr=45.0 cnt=0
+[CUR] t=51542 ZDERZAK CH2 I=20.4 mA dI=2.8 thr=45.0 cnt=0
+[CUR] t=51582 ZDERZAK CH2 I=18.4 mA dI=-2.0 thr=45.0 cnt=0
+[CUR] t=51622 ZDERZAK CH2 I=22.8 mA dI=4.4 thr=45.0 cnt=0
+[CUR] t=51662 ZDERZAK CH2 I=20.4 mA dI=2.0 thr=45.0 cnt=0
+[CUR] t=51702 ZDERZAK CH2 I=23.6 mA dI=1.6 thr=45.0 cnt=0
+[CUR] t=51742 ZDERZAK CH2 I=21.6 mA dI=9.2 thr=45.0 cnt=0
+[CUR] t=51782 ZDERZAK CH2 I=24.0 mA dI=10.8 thr=45.0 cnt=0
+[CUR] t=51787 STALL? CH2 I=24.0 mA dI=10.8 thr=45.0 cnt=1
+  STALL? CH2 I=24.0mA dI=10.8 (1/1)
+[CUR] t=51796 ZDERZAK! CH2 I=24.0 mA dI=10.8 thr=45.0 cnt=1
+>>> ZDERZAK CH2 t=880 ms
+[H] OS1: 880 ms / 100° = 8.800 ms/°
+
+[H] OS1 → powrót na zderzak A...
+[CUR] t=52033 ZDERZAK CH2 I=62.4 mA dI=-71.2 thr=45.0 cnt=0
+[CUR] t=52073 ZDERZAK CH2 I=24.4 mA dI=-13.2 thr=45.0 cnt=0
+[CUR] t=52113 ZDERZAK CH2 I=22.8 mA dI=0.4 thr=45.0 cnt=0
+[CUR] t=52153 ZDERZAK CH2 I=25.6 mA dI=0.0 thr=45.0 cnt=0
+[CUR] t=52193 ZDERZAK CH2 I=20.0 mA dI=-2.4 thr=45.0 cnt=0
+[CUR] t=52233 ZDERZAK CH2 I=20.0 mA dI=-3.2 thr=45.0 cnt=0
+[CUR] t=52273 ZDERZAK CH2 I=25.2 mA dI=6.4 thr=45.0 cnt=0
+[CUR] t=52313 ZDERZAK CH2 I=19.2 mA dI=-4.4 thr=45.0 cnt=0
+[CUR] t=52353 ZDERZAK CH2 I=20.0 mA dI=-2.8 thr=45.0 cnt=0
+[CUR] t=52393 ZDERZAK CH2 I=23.6 mA dI=0.8 thr=45.0 cnt=0
+[CUR] t=52433 ZDERZAK CH2 I=19.6 mA dI=0.4 thr=45.0 cnt=0
+[CUR] t=52473 ZDERZAK CH2 I=20.0 mA dI=-4.4 thr=45.0 cnt=0
+[CUR] t=52513 ZDERZAK CH2 I=20.8 mA dI=-3.6 thr=45.0 cnt=0
+[CUR] t=52553 ZDERZAK CH2 I=23.2 mA dI=0.4 thr=45.0 cnt=0
+[CUR] t=52593 ZDERZAK CH2 I=20.0 mA dI=-1.2 thr=45.0 cnt=0
+[CUR] t=52633 ZDERZAK CH2 I=20.4 mA dI=-0.4 thr=45.0 cnt=0
+[CUR] t=52673 ZDERZAK CH2 I=25.2 mA dI=4.8 thr=45.0 cnt=0
+[CUR] t=52713 ZDERZAK CH2 I=21.6 mA dI=0.8 thr=45.0 cnt=0
+[CUR] t=52753 ZDERZAK CH2 I=22.4 mA dI=-1.2 thr=45.0 cnt=0
+[CUR] t=52793 ZDERZAK CH2 I=29.6 mA dI=0.8 thr=45.0 cnt=0
+[CUR] t=52833 ZDERZAK CH2 I=37.6 mA dI=3.6 thr=45.0 cnt=0
+[CUR] t=52873 ZDERZAK CH2 I=51.2 mA dI=10.0 thr=45.0 cnt=0
+[CUR] t=52878 STALL? CH2 I=51.2 mA dI=10.0 thr=45.0 cnt=1
+  STALL? CH2 I=51.2mA dI=10.0 (1/1)
+[CUR] t=52887 ZDERZAK! CH2 I=51.2 mA dI=10.0 thr=45.0 cnt=1
+>>> ZDERZAK CH2 t=880 ms
+[H] OS2 → zderzak A (CCW)...
+[CUR] t=53119 ZDERZAK CH1 I=110.4 mA dI=-33.6 thr=60.0 cnt=0
+[CUR] t=53159 ZDERZAK CH1 I=98.4 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=53199 ZDERZAK CH1 I=98.0 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=53239 ZDERZAK CH1 I=88.8 mA dI=-6.4 thr=60.0 cnt=0
+[CUR] t=53279 ZDERZAK CH1 I=54.0 mA dI=-27.2 thr=60.0 cnt=0
+[CUR] t=53319 ZDERZAK CH1 I=52.4 mA dI=2.0 thr=60.0 cnt=0
+[CUR] t=53359 ZDERZAK CH1 I=50.8 mA dI=2.0 thr=60.0 cnt=0
+[CUR] t=53399 ZDERZAK CH1 I=58.0 mA dI=2.0 thr=60.0 cnt=0
+[CUR] t=53439 ZDERZAK CH1 I=63.6 mA dI=3.6 thr=60.0 cnt=0
+[CUR] t=53444 STALL? CH1 I=63.6 mA dI=3.6 thr=60.0 cnt=1
+  STALL? CH1 I=63.6mA dI=3.6 (1/1)
+[CUR] t=53453 ZDERZAK! CH1 I=63.6 mA dI=3.6 thr=60.0 cnt=1
+>>> ZDERZAK CH1 t=360 ms
+[H] OS2 → mierzę zakres (CW)...
+[CUR] t=53686 ZDERZAK CH1 I=62.0 mA dI=-50.0 thr=60.0 cnt=0
+[CUR] t=53726 ZDERZAK CH1 I=37.6 mA dI=-7.2 thr=60.0 cnt=0
+[CUR] t=53766 ZDERZAK CH1 I=38.8 mA dI=-3.2 thr=60.0 cnt=0
+[CUR] t=53806 ZDERZAK CH1 I=42.0 mA dI=3.2 thr=60.0 cnt=0
+[CUR] t=53846 ZDERZAK CH1 I=40.4 mA dI=-6.8 thr=60.0 cnt=0
+[CUR] t=53886 ZDERZAK CH1 I=40.8 mA dI=-2.0 thr=60.0 cnt=0
+[CUR] t=53926 ZDERZAK CH1 I=41.6 mA dI=-2.8 thr=60.0 cnt=0
+[CUR] t=53966 ZDERZAK CH1 I=40.8 mA dI=-7.6 thr=60.0 cnt=0
+[CUR] t=54006 ZDERZAK CH1 I=39.2 mA dI=-3.6 thr=60.0 cnt=0
+[CUR] t=54046 ZDERZAK CH1 I=40.8 mA dI=-4.0 thr=60.0 cnt=0
+[CUR] t=54086 ZDERZAK CH1 I=48.0 mA dI=5.2 thr=60.0 cnt=0
+[CUR] t=54126 ZDERZAK CH1 I=39.2 mA dI=-3.6 thr=60.0 cnt=0
+[CUR] t=54166 ZDERZAK CH1 I=43.6 mA dI=-2.4 thr=60.0 cnt=0
+[CUR] t=54206 ZDERZAK CH1 I=37.6 mA dI=-2.0 thr=60.0 cnt=0
+[CUR] t=54246 ZDERZAK CH1 I=41.6 mA dI=1.6 thr=60.0 cnt=0
+[CUR] t=54286 ZDERZAK CH1 I=38.4 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=54326 ZDERZAK CH1 I=39.2 mA dI=1.6 thr=60.0 cnt=0
+[CUR] t=54366 ZDERZAK CH1 I=40.8 mA dI=1.2 thr=60.0 cnt=0
+[CUR] t=54406 ZDERZAK CH1 I=41.2 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=54446 ZDERZAK CH1 I=40.4 mA dI=-0.8 thr=60.0 cnt=0
+[CUR] t=54486 ZDERZAK CH1 I=40.8 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=54526 ZDERZAK CH1 I=40.8 mA dI=0.0 thr=60.0 cnt=0
+[CUR] t=54566 ZDERZAK CH1 I=38.8 mA dI=-1.6 thr=60.0 cnt=0
+[CUR] t=54606 ZDERZAK CH1 I=39.6 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=54646 ZDERZAK CH1 I=38.4 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=54686 ZDERZAK CH1 I=39.2 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=54726 ZDERZAK CH1 I=38.0 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=54766 ZDERZAK CH1 I=36.4 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=54806 ZDERZAK CH1 I=37.2 mA dI=-1.6 thr=60.0 cnt=0
+[CUR] t=54846 ZDERZAK CH1 I=39.6 mA dI=2.8 thr=60.0 cnt=0
+[CUR] t=54886 ZDERZAK CH1 I=41.2 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=54926 ZDERZAK CH1 I=45.2 mA dI=4.8 thr=60.0 cnt=0
+[CUR] t=54966 ZDERZAK CH1 I=40.8 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=55006 ZDERZAK CH1 I=36.4 mA dI=-2.4 thr=60.0 cnt=0
+[CUR] t=55046 ZDERZAK CH1 I=39.6 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=55086 ZDERZAK CH1 I=43.2 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=55126 ZDERZAK CH1 I=40.4 mA dI=-3.2 thr=60.0 cnt=0
+[CUR] t=55166 ZDERZAK CH1 I=38.0 mA dI=2.0 thr=60.0 cnt=0
+[CUR] t=55206 ZDERZAK CH1 I=43.6 mA dI=5.2 thr=60.0 cnt=0
+[CUR] t=55246 ZDERZAK CH1 I=39.6 mA dI=0.0 thr=60.0 cnt=0
+[CUR] t=55286 ZDERZAK CH1 I=38.0 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=55326 ZDERZAK CH1 I=42.8 mA dI=2.4 thr=60.0 cnt=0
+[CUR] t=55366 ZDERZAK CH1 I=36.8 mA dI=-6.8 thr=60.0 cnt=0
+[CUR] t=55406 ZDERZAK CH1 I=40.0 mA dI=3.6 thr=60.0 cnt=0
+[CUR] t=55446 ZDERZAK CH1 I=41.6 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=55486 ZDERZAK CH1 I=37.2 mA dI=-3.2 thr=60.0 cnt=0
+[CUR] t=55526 ZDERZAK CH1 I=40.8 mA dI=2.4 thr=60.0 cnt=0
+[CUR] t=55566 ZDERZAK CH1 I=36.4 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=55606 ZDERZAK CH1 I=37.2 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=55646 ZDERZAK CH1 I=39.2 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=55686 ZDERZAK CH1 I=35.2 mA dI=-0.8 thr=60.0 cnt=0
+[CUR] t=55726 ZDERZAK CH1 I=40.4 mA dI=-3.6 thr=60.0 cnt=0
+[CUR] t=55766 ZDERZAK CH1 I=34.0 mA dI=-2.0 thr=60.0 cnt=0
+[CUR] t=55786 STALL? CH1 I=43.6 mA dI=9.6 thr=60.0 cnt=1
+  STALL? CH1 I=43.6mA dI=9.6 (1/1)
+[CUR] t=55794 ZDERZAK! CH1 I=43.6 mA dI=9.6 thr=60.0 cnt=1
+>>> ZDERZAK CH1 t=2140 ms
+[H] OS2: 2140 ms / 320° = 6.688 ms/°
+
+[H] OS2 → powrót na zderzak A (CCW)...
+[CUR] t=56011 ZDERZAK CH1 I=113.2 mA dI=113.2 thr=60.0 cnt=0
+[CUR] t=56051 ZDERZAK CH1 I=56.4 mA dI=-9.2 thr=60.0 cnt=0
+[CUR] t=56091 ZDERZAK CH1 I=43.6 mA dI=-2.0 thr=60.0 cnt=0
+[CUR] t=56131 ZDERZAK CH1 I=48.4 mA dI=6.8 thr=60.0 cnt=0
+[CUR] t=56171 ZDERZAK CH1 I=44.4 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=56211 ZDERZAK CH1 I=48.4 mA dI=8.0 thr=60.0 cnt=0
+[CUR] t=56251 ZDERZAK CH1 I=44.0 mA dI=3.2 thr=60.0 cnt=0
+[CUR] t=56291 ZDERZAK CH1 I=40.0 mA dI=-4.4 thr=60.0 cnt=0
+[CUR] t=56331 ZDERZAK CH1 I=47.2 mA dI=4.4 thr=60.0 cnt=0
+[CUR] t=56371 ZDERZAK CH1 I=39.2 mA dI=-2.0 thr=60.0 cnt=0
+[CUR] t=56411 ZDERZAK CH1 I=38.4 mA dI=-4.8 thr=60.0 cnt=0
+[CUR] t=56451 ZDERZAK CH1 I=43.2 mA dI=1.6 thr=60.0 cnt=0
+[CUR] t=56491 ZDERZAK CH1 I=38.4 mA dI=-1.6 thr=60.0 cnt=0
+[CUR] t=56531 ZDERZAK CH1 I=42.0 mA dI=3.2 thr=60.0 cnt=0
+[CUR] t=56571 ZDERZAK CH1 I=37.6 mA dI=-2.4 thr=60.0 cnt=0
+[CUR] t=56611 ZDERZAK CH1 I=39.2 mA dI=1.2 thr=60.0 cnt=0
+[CUR] t=56651 ZDERZAK CH1 I=42.0 mA dI=1.2 thr=60.0 cnt=0
+[CUR] t=56691 ZDERZAK CH1 I=40.0 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=56731 ZDERZAK CH1 I=38.0 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=56771 ZDERZAK CH1 I=38.4 mA dI=0.0 thr=60.0 cnt=0
+[CUR] t=56811 ZDERZAK CH1 I=38.0 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=56851 ZDERZAK CH1 I=36.8 mA dI=0.0 thr=60.0 cnt=0
+[CUR] t=56891 ZDERZAK CH1 I=37.2 mA dI=0.0 thr=60.0 cnt=0
+[CUR] t=56931 ZDERZAK CH1 I=40.0 mA dI=2.4 thr=60.0 cnt=0
+[CUR] t=56971 ZDERZAK CH1 I=36.4 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=57011 ZDERZAK CH1 I=37.2 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=57051 ZDERZAK CH1 I=40.8 mA dI=2.4 thr=60.0 cnt=0
+[CUR] t=57091 ZDERZAK CH1 I=43.6 mA dI=2.0 thr=60.0 cnt=0
+[CUR] t=57131 ZDERZAK CH1 I=38.4 mA dI=-4.4 thr=60.0 cnt=0
+[CUR] t=57171 ZDERZAK CH1 I=36.8 mA dI=1.2 thr=60.0 cnt=0
+[CUR] t=57211 ZDERZAK CH1 I=42.8 mA dI=4.4 thr=60.0 cnt=0
+[CUR] t=57251 ZDERZAK CH1 I=38.0 mA dI=-4.8 thr=60.0 cnt=0
+[CUR] t=57291 ZDERZAK CH1 I=38.4 mA dI=2.8 thr=60.0 cnt=0
+[CUR] t=57331 ZDERZAK CH1 I=43.6 mA dI=4.0 thr=60.0 cnt=0
+[CUR] t=57371 ZDERZAK CH1 I=35.2 mA dI=-3.6 thr=60.0 cnt=0
+[CUR] t=57411 ZDERZAK CH1 I=39.2 mA dI=1.6 thr=60.0 cnt=0
+[CUR] t=57451 ZDERZAK CH1 I=35.6 mA dI=0.0 thr=60.0 cnt=0
+[CUR] t=57491 ZDERZAK CH1 I=39.2 mA dI=3.2 thr=60.0 cnt=0
+[CUR] t=57531 ZDERZAK CH1 I=35.6 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=57571 ZDERZAK CH1 I=40.0 mA dI=-1.2 thr=60.0 cnt=0
+[CUR] t=57611 ZDERZAK CH1 I=38.8 mA dI=3.6 thr=60.0 cnt=0
+[CUR] t=57651 ZDERZAK CH1 I=34.0 mA dI=-5.2 thr=60.0 cnt=0
+[CUR] t=57691 ZDERZAK CH1 I=34.4 mA dI=-4.0 thr=60.0 cnt=0
+[CUR] t=57731 ZDERZAK CH1 I=38.8 mA dI=3.6 thr=60.0 cnt=0
+[CUR] t=57771 ZDERZAK CH1 I=36.4 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=57811 ZDERZAK CH1 I=40.4 mA dI=-2.0 thr=60.0 cnt=0
+[CUR] t=57851 ZDERZAK CH1 I=36.4 mA dI=0.8 thr=60.0 cnt=0
+[CUR] t=57891 ZDERZAK CH1 I=39.6 mA dI=2.0 thr=60.0 cnt=0
+[CUR] t=57931 ZDERZAK CH1 I=41.6 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=57971 ZDERZAK CH1 I=39.2 mA dI=-0.4 thr=60.0 cnt=0
+[CUR] t=58011 ZDERZAK CH1 I=42.4 mA dI=-4.8 thr=60.0 cnt=0
+[CUR] t=58051 ZDERZAK CH1 I=42.8 mA dI=-2.8 thr=60.0 cnt=0
+[CUR] t=58091 ZDERZAK CH1 I=49.6 mA dI=0.4 thr=60.0 cnt=0
+[CUR] t=58131 ZDERZAK CH1 I=61.2 mA dI=5.6 thr=60.0 cnt=0
+[CUR] t=58136 STALL? CH1 I=61.2 mA dI=5.6 thr=60.0 cnt=1
+  STALL? CH1 I=61.2mA dI=5.6 (1/1)
+[CUR] t=58145 ZDERZAK! CH1 I=61.2 mA dI=5.6 thr=60.0 cnt=1
+>>> ZDERZAK CH1 t=2140 ms
+=== HOMING ZAKOŃCZONY ===
+    OS1: 8.800 ms/°  |  OS2: 6.688 ms/°
+
+Rekalibracja zapisana.
+
+[3] Czekam na przycisk PC14 lub CAN FIRE...

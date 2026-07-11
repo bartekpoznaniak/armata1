@@ -41,12 +41,12 @@ extern CAN_HandleTypeDef hcan1;
 
 static const Pozycja sekwencja0[] = {
     { 40.0f,  150.0f, 500, 1 },
-    { 20.0f,  50.0f, 500, 1 },
+    { 30.0f,  50.0f, 500, 1 },
 };
 
 static const Pozycja sekwencja1[] = {
     {  40.0f, 100.0f,  500, 1 },
-    {  20.0f,  50.0f,  500, 1 },
+    {  30.0f,  50.0f,  500, 1 },
     {  70.0f,  80.0f,  500, 1 },  /* WYSTRZAL       */
     {  80.0f, 120.0f,  500, 1 },
     {  45.0f, 170.0f,  500, 1 },  /* WYSTRZAL       */
@@ -74,11 +74,11 @@ static const Pozycja sekwencja2[] = {
 	{ 35.0f, 250.0f, 100, 1 },
 	{ 30.0f, 260.0f, 100, 1 },
 	{ 25.0f, 270.0f, 100, 1 },
-	{ 20.0f, 280.0f, 100, 1 },
-	{ 15.0f, 290.0f, 100, 1 },
-	{ 10.0f, 300.0f, 100, 1 },
-	{ 45.0f, 310.0f, 100, 1 },
-	{ 55.0f, 320.0f, 100, 1 },
+	{ 35.0f, 280.0f, 100, 1 },
+	{ 55.0f, 200.0f, 100, 1 },
+//	{ 10.0f, 300.0f, 100, 1 },
+//	{ 45.0f, 310.0f, 100, 1 },
+//	{ 55.0f, 320.0f, 100, 1 },
 
 
 
@@ -104,11 +104,13 @@ static const Pozycja sekwencja5[] = {
 static const Pozycja sekwencja6[] = {
     { 45.0f, 170.0f, 500, 1 },
     { 60.0f, 150.0f, 500, 1 },
+    { 45.0f, 130.0f, 500, 0 },
+
 };
 
 static const Pozycja sekwencja7[] = {
     { 40.0f,  150.0f, 500, 1 },
-    { 20.0f,  50.0f, 500, 1 },
+    { 30.0f,  50.0f, 500, 1 },
 };
 
 static const Pozycja sekwencja8[] = {

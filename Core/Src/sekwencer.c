@@ -6,11 +6,14 @@
 #include "wystrzal.h"
 #include <stdio.h>
 
+#define GENERATOR_ROZGRZEW_MS 1500u
+
+
 void sekwencer_run(const Pozycja *seq, uint16_t len)
 {
     uint16_t krok = 0;
-    //generator_wl();                          // ← DODAJ: włącz generator
-    //HAL_Delay(GENERATOR_ROZGRZEW_MS);        // ← DODAJ: czekaj na rozgrzanie
+    generator_wl();                          // ← DODAJ: włącz generator
+    HAL_Delay(GENERATOR_ROZGRZEW_MS);        // ← DODAJ: czekaj na rozgrzanie
 
     while (krok < len)
     {
@@ -45,7 +48,7 @@ void sekwencer_run(const Pozycja *seq, uint16_t len)
         }                           // ← NOWE
         printf("[SEQ] Pozycja OK. Pauza %lu ms\\r\\n", p->pauza_ms);
         HAL_Delay(p->pauza_ms);
-        //generator_wyl();
+        generator_wyl();
 
         krok++;
     }
