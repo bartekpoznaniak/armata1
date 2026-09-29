@@ -22,4 +22,6 @@ void    wykonaj_homing_i_geometrie(void);
 uint8_t jedz_do_kata_os1(float kat_deg);
 uint8_t jedz_do_kata_os2(float kat_deg);
 
+extern float ms_per_deg_os1;
+extern float ms_per_deg_os2;
 #endif

@@ -1,0 +1,57 @@
+//flash_config.c
+
+#include "flash_config.h"
+#include <string.h>
+
+/* ── Prosta CRC — suma uint32_t po wszystkich polach prócz crc ── */
+static uint32_t oblicz_crc(const KalibracjaFlash *d) {
+    uint32_t sum = 0;
+    sum += d->magic;
+    sum += *(uint32_t*)&d->offset_lufy;
+    sum += *(uint32_t*)&d->offset_obrotu;
+    sum += *(uint32_t*)&d->pozycja_home_x;
+    sum += *(uint32_t*)&d->pozycja_home_y;
+    return sum;
+}
+
+int flash_kalibracja_valid(void) {
+    KalibracjaFlash tmp;
+    memcpy(&tmp, (void*)FLASH_CONFIG_ADDR, sizeof(tmp));
+    return (tmp.magic == FLASH_MAGIC) && (tmp.crc == oblicz_crc(&tmp));
+}
+
+int flash_wczytaj_kalibracje(KalibracjaFlash *dane) {
+    if (!flash_kalibracja_valid()) return 0;
+    memcpy(dane, (void*)FLASH_CONFIG_ADDR, sizeof(*dane));
+    return 1;
+}
+
+HAL_StatusTypeDef flash_zapisz_kalibracje(const KalibracjaFlash *dane) {
+    HAL_StatusTypeDef status;
+    uint32_t          pageError = 0;
+
+    FLASH_EraseInitTypeDef eraseInit = {
+        .TypeErase   = FLASH_TYPEERASE_PAGES,
+        .PageAddress = FLASH_CONFIG_ADDR,
+        .NbPages     = 1
+    };
+
+    HAL_FLASH_Unlock();
+
+    status = HAL_FLASHEx_Erase(&eraseInit, &pageError);
+    if (status != HAL_OK) { HAL_FLASH_Lock(); return status; }
+
+    /* Zapis po 4 bajty (WORD) */
+    const uint32_t *ptr  = (const uint32_t *)dane;
+    uint32_t        addr = FLASH_CONFIG_ADDR;
+    uint32_t        len  = sizeof(KalibracjaFlash) / 4;
+
+    for (uint32_t i = 0; i < len; i++) {
+        status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, ptr[i]);
+        if (status != HAL_OK) break;
+        addr += 4;
+    }
+
+    HAL_FLASH_Lock();
+    return status;
+}
